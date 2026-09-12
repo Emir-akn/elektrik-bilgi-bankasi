@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elektrik Bilgi Bankası & Hesaplama Merkezi</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header ve Mobil Menü Butonu */
+        .header {
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-toggle-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--color-border, #334155);
+            color: #ffffff;
+            font-size: 1.25rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            height: 100% !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            z-index: 50;
+        }
+
+        .navbar {
+            padding-bottom: 5rem !important;
+        }
+
+        .sub-menu {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        .nav-menu {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
+        }
+
+        .nav-link {
+            position: relative !important;
+            z-index: 1 !important;
+        }
+
+        /* Karartma Katmanı (Mobil Çekmece Menü İçin) */
+        .sidebar-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 40;
+        }
+
+        /* İçerik Alanı */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            padding-bottom: 5rem !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .page {
+            display: none;
+            padding-bottom: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Detaylı Açılır Kart Stilleri */
+        .expandable-card {
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            border: 1px solid var(--color-border, #334155);
+            background-color: var(--color-bg-secondary, #1e293b);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+            margin-bottom: 1.25rem;
+        }
+
+        .expandable-card:hover {
+            border-color: var(--color-secondary, #3b82f6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        .card-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .expand-badge {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .detail-content {
+            display: none;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .expandable-card.open .detail-content {
+            display: block;
+        }
+
+        .expandable-card.open {
+            border-color: #3b82f6;
+            background-color: rgba(30, 41, 59, 0.98);
+        }
+
+        .detail-content h5 {
+            color: #38bdf8;
+            font-size: 1rem;
+            margin: 1rem 0 0.4rem 0;
+        }
+
+        .detail-content p, .detail-content li {
+            font-size: 0.92rem;
+            color: var(--color-text-secondary, #cbd5e1);
+            line-height: 1.7;
+        }
+
+        .detail-content ul {
+            padding-left: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .formula-tag {
+            display: inline-block;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            color: #93c5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 0.2rem 0;
+            word-break: break-all;
+        }
+
+        #about .about-card {
+            margin-top: 1.5rem;
+            padding: 2rem;
+            border-radius: 1rem;
+            background-color: var(--color-bg-secondary, #1e293b);
+            border: 1px solid var(--color-border, #334155);
+            line-height: 1.8;
+        }
+
+        .footer {
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        /* Mobil & Tablet Ekran Optimizasyonları */
+        @media (max-width: 850px) {
+            .menu-toggle-btn {
+                display: block;
+            }
+
+            .sidebar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .calculator-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.75rem;
+            }
+
+            .app-title {
+                font-size: 1.05rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .calc-type-selector {
+                flex-direction: column;
+            }
+
+            .result-value {
+                font-size: 1.8rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <button id="menuToggleBtn" class="menu-toggle-btn" aria-label="Menü">☰</button>
+                <h1 class="app-title">⚡ Elektrik Bilgi Bankası</h1>
+            </div>
+            <button id="themeToggle" class="theme-toggle" title="Dark/Light Mode">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Mobil Menü Karartması -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="sidebar">
+            <nav class="navbar">
+                <ul class="nav-menu">
+                    <li><a href="#" data-page="home" class="nav-link active">🏠 Ana Sayfa</a></li>
+                    
+                    <li class="nav-category">
+                        <span class="category-title">📚 Bilgi Bankası</span>
+                        <ul class="sub-menu">
+                            <li><a href="#" data-page="info-basic" class="nav-link">Temel Elektrik</a></li>
+                            <li><a href="#" data-page="info-ac-dc" class="nav-link">AC / DC</a></li>
+                            <li><a href="#" data-page="info-power" class="nav-link">Güç</a></li>
+                            <li><a href="#" data-page="info-motors" class="nav-link">Motorlar</a></li>
+                            <li><a href="#" data-page="info-transformers" class="nav-link">Transformatörler</a></li>
+                            <li><a href="#" data-page="info-protection" class="nav-link">Koruma Elemanları</a></li>
+                            <li><a href="#" data-page="info-panel" class="nav-link">Pano Elemanları</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-category">
+                        <span class="category-title">🧮 Hesaplama Merkezi</span>
+                        <ul class="sub-menu">
+                            <li><a href="#" data-page="calc-ohm" class="nav-link">Ohm Kanunu</a></li>
+                            <li><a href="#" data-page="calc-power-dc" class="nav-link">DC Güç</a></li>
+                            <li><a href="#" data-page="calc-power-ac-single" class="nav-link">Tek Faz AC Güç</a></li>
+                            <li><a href="#" data-page="calc-power-ac-three" class="nav-link">3 Faz Güç</a></li>
+                            <li><a href="#" data-page="calc-current" class="nav-link">Akım</a></li>
+                            <li><a href="#" data-page="calc-voltage" class="nav-link">Gerilim</a></li>
+                            <li><a href="#" data-page="calc-resistance" class="nav-link">Direnç</a></li>
+                            <li><a href="#" data-page="calc-energy" class="nav-link">Enerji</a></li>
+                            <li><a href="#" data-page="calc-power-factor" class="nav-link">Güç Faktörü</a></li>
+                            <li><a href="#" data-page="calc-transformer" class="nav-link">Transformatör</a></li>
+                        </ul>
+                    </li>
+
+                    <li style="margin-top: 10px;"><a href="#" data-page="about" class="nav-link">ℹ️ Hakkında</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <div class="page-header">
+                    <h2>⚡ Elektrik Bilgi Bankası</h2>
+                    <p class="subtitle">Elektrik-Elektronik Mühendisliği için Kapsamlı Bilgi ve Hesaplama Portalı</p>
+                </div>
+
+                <section class="section">
+                    <h3>🚀 Hızlı Erişim - Hesaplama Araçları</h3>
+                    <div class="cards-grid">
+                        <div class="card calc-card" data-page="calc-ohm">
+                            <div class="card-icon">⚡</div>
+                            <h4>Ohm Kanunu</h4>
+                            <p>V, I, R hesapla</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-power-dc">
+                            <div class="card-icon">💡</div>
+                            <h4>Elektrik Gücü (DC)</h4>
+                            <p>P = V × I</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-energy">
+                            <div class="card-icon">⚙️</div>
+                            <h4>Enerji Hesaplama</h4>
+                            <p>E = P × t</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-power-ac-single">
+                            <div class="card-icon">〰️</div>
+                            <h4>AC Güç (Tek Faz)</h4>
+                            <p>P = V × I × cosφ</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-power-ac-three">
+                            <div class="card-icon">⚡⚡⚡</div>
+                            <h4>3 Faz Güç</h4>
+                            <p>P = √3 × V × I × cosφ</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-current">
+                            <div class="card-icon">→→</div>
+                            <h4>Akım Hesaplama</h4>
+                            <p>I hesapla</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-resistance">
+                            <div class="card-icon">Ω</div>
+                            <h4>Direnç Hesaplama</h4>
+                            <p>Seri / Paralel</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                        <div class="card calc-card" data-page="calc-voltage">
+                            <div class="card-icon">⇅</div>
+                            <h4>Gerilim Hesaplama</h4>
+                            <p>V hesapla</p>
+                            <button class="btn btn-primary">Açılır</button>
+                        </div>
+                    </div>
+                    <div class="stats-box">
+                        <p>Bilgi Bankası modüllerinde kartlara tıklayarak detaylı mühendislik hesaplarını, pano uygulama kriterlerini ve IEC standartlarını açabilirsiniz.</p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h3>📚 Bilgi Kategorileri</h3>
+                    <div class="info-categories">
+                        <div class="category-chip" data-page="info-basic">Temel Elektrik</div>
+                        <div class="category-chip" data-page="info-ac-dc">AC / DC</div>
+                        <div class="category-chip" data-page="info-power">Güç</div>
+                        <div class="category-chip" data-page="info-motors">Motorlar</div>
+                        <div class="category-chip" data-page="info-transformers">Transformatörler</div>
+                        <div class="category-chip" data-page="info-protection">Koruma Elemanları</div>
+                        <div class="category-chip" data-page="info-panel">Pano Elemanları</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 1. TEMEL ELEKTRİK -->
+            <div id="info-basic" class="page">
+                <div class="page-header">
+                    <h2>📚 Temel Elektrik Mühendisliği Parametreleri</h2>
+                    <p class="subtitle">Kartlara tıklayarak standart formülleri, şebeke toleranslarını ve can güvenliği sınırlarını görüntüleyebilirsiniz.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>⚡ Elektriksel Gerilim (Voltaj - V) ve Potansiyel Farkı</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Birim yükün iletken boyunca taşınması için gereken elektriksel potansiyel enerjisi farkıdır. Birimi Volt (V)'tur.</p>
+                    <div class="result-formula">V = I × R | V = P / I | 1 Volt = 1 Joule / 1 Coulomb</div>
+                    <div class="detail-content">
+                        <h5>Teknik Standartlar ve Şebeke Seviyeleri:</h5>
+                        <p>TS HD 60364 ve IEC 60038 standartlarına göre Türkiye ve Avrupa enterkonnekte alçak gerilim şebekesinde nominal faz-nötr gerilimi <strong>230V AC</strong>, fazlar arası gerilim ise <strong>400V AC</strong> (50 Hz) olarak tanımlanmıştır. Yasal voltaj değişim toleransı <strong>% ±10</strong> aralığıdır (Faz-Nötr: 207V - 253V).</p>
+                        <h5>Mühendislik ve Saha Uygulama Kriterleri:</h5>
+                        <ul>
+                            <li><strong>Tehlikeli Gerilim Eşiği:</strong> İSG mevzuatına göre kuru ortamlarda <strong>50V AC</strong> ve <strong>120V DC</strong> üzerindeki gerilimler hayati tehlike arz eder; nemli/ıslak ortamlarda bu sınır 25V AC seviyesine iner.</li>
+                            <li><strong>Pano İçi Kumanda Güvenliği:</strong> Otomasyon ve kumanda devrelerinde operatör güvenliği ve izolasyon delinmelerine karşı SELV/PELV standartlarında <strong>24V DC</strong> gerilim kullanılır.</li>
+                            <li><strong>Ölçüm Güvenlik Kategorileri:</strong> Dağıtım panolarında gerilim ölçülürken en az <strong>CAT III 600V</strong> veya <strong>CAT IV 1000V</strong> sertifikalı ölçü aletleri ve korumalı problar tercih edilmelidir.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>→ Elektrik Akımı (I) ve İletken Davranışları</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> İletkenin belirli bir kesitinden birim zamanda geçen serbest elektron yükü miktarıdır. Birimi Amper (A)'dir.</p>
+                    <div class="result-formula">I = V / R | I = P / (√3 × U × cosφ) | 1 Amper = 1 C/s</div>
+                    <div class="detail-content">
+                        <h5>Akım Yoğunluğu ve İletken Isınması:</h5>
+                        <p>Akım iletken üzerinden akarken iç direnç nedeniyle ısı açığa çıkar (Joule Kanunu: <span class="formula-tag">Q = I² × R × t</span>). Kablo kesitlerinin yetersiz olması durumunda izolasyon malzemesi (PVC: 70°C, XLPE: 90°C) termal bozunmaya uğrayarak kısa devreye ve yangına yol açar.</p>
+                        <h5>İnsan Vücudu Akım Mertebeleri ve Koruma:</h5>
+                        <ul>
+                            <li><strong>0.5 mA - 1 mA:</strong> Hissedilme eşiği; hafif karıncalanma hissi.</li>
+                            <li><strong>10 mA - 15 mA:</strong> Kas kasılması ("bırakamama" eşiği); istemsiz kasılmalar başlar.</li>
+                            <li><strong>30 mA:</strong> Ventriküler fibrilasyon (kalp ritminin bozulması) başlangıcı. Bu nedenle priz linyelerinde <strong>30 mA Kaçak Akım Rölesi (RCD)</strong> hayat koruma eşiğidir.</li>
+                            <li><strong>50 mA - 100 mA:</strong> Solunum felci ve ölümcül seviye. Temas süresi 0.2 saniyeyi aştığında ölüm riski çok yüksektir.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>Ω Elektriksel Direnç (R), Özdirenç ve İletkenlik</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> İletken maddenin elektrik akımının geçişine karşı koyduğu zorluktur. Birimi Ohm (Ω)'dur.</p>
+                    <div class="result-formula">R = ρ × (L / S) | R_T = R_0 × [1 + α × ΔT]</div>
+                    <div class="detail-content">
+                        <h5>Özdirenç Değerleri ve Malzeme Kıyaslaması (20°C):</h5>
+                        <ul>
+                            <li><strong>Elektrolitik Bakır (Cu):</strong> <span class="formula-tag">ρ = 0.0175 Ω·mm²/m</span> (Özgül iletkenlik: 56 m/Ω·mm²). Pano içi baralarda ve dahili tesisatta standart iletken materyalidir.</li>
+                            <li><strong>Alüminyum (Al):</strong> <span class="formula-tag">ρ = 0.028 Ω·mm²/m</span> (Özgül iletkenlik: 35 m/Ω·mm²). Bakıra göre %60 daha hafif ve ekonomiktir; OG havai hat ve büyük kesitli yer altı besleme kablolarında tercih edilir.</li>
+                            <li><strong>Sıcaklık Katsayısı (α):</strong> Metallerde sıcaklık arttıkça direnç lineer olarak yükselir (Bakır için α = 0.00393 1/°C). Pano içerisindeki sıcaklık 50°C'ye ulaştığında iletken direnci yaklaşık %12 artar, bu da gerilim düşümünü artırır.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. AC / DC SİSTEMLER -->
+            <div id="info-ac-dc" class="page">
+                <div class="page-header">
+                    <h2>〰️ AC / DC Sistemler, Şebeke İlkeleri ve Dönüşüm</h2>
+                    <p class="subtitle">Doğru akım ve alternatif akım çalışma rejimleri, 3 faz şebeke matematiği ve frekans kontrolü.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🔋 DC (Doğru Akım) Sistemleri ve Endüstriyel Donanımlar</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Zamana göre kutupları (+ / -) ve akış doğrultusu sabit kalan elektrik enerjisi formudur.</p>
+                    <div class="result-formula">P = V × I (Reaktif güç = 0, cosφ = 1.0)</div>
+                    <div class="detail-content">
+                        <h5>Karakteristik Özellikler ve Kullanım Alanları:</h5>
+                        <p>DC sistemlerde frekans sıfır (0 Hz) olduğu için reaktif kayıplar, endüktif reaktans ve yüzey etkisi (skin effect) bulunmaz. İletken kesitinin tamamı aktif olarak akım taşır.</p>
+                        <ul>
+                            <li><strong>Güneş Enerjisi (GES) Santralleri:</strong> PV paneller ışınımı doğrudan DC güce dönüştürür. DC dizi kabloları 1000V - 1500V DC gerilim seviyelerine dayanıklı özel solar kablolar ve DC parafudrlar ile donatılır.</li>
+                            <li><strong>Akü Grupları ve UPS Sistemleri:</strong> Kesintisiz Güç Kaynaklarında şebeke kesildiğinde sistem bataryalarındaki 12V, 24V veya 400V DC bara geriliminden beslenir.</li>
+                            <li><strong>Endüstriyel Otomasyon Panoları:</strong> PLC, HMI operatör panelleri, röle ve sensörler endüstriyel anahtarlamalı güç kaynakları (SMPS) ile 24V DC regüle gerilimle beslenir.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>〰️ 3 Fazlı AC Şebeke Yapısı ve Dönel Alan Prensibi</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Birbirine göre 120° elektriksel faz farkına sahip üç sinüsoidal alternatif gerilim sistemidir.</p>
+                    <div class="result-formula">U_hat = √3 × U_faz (400V = 1.732 × 230V) | f = 50 Hz (T = 20 ms)</div>
+                    <div class="detail-content">
+                        <h5>Yıldız (Y) ve Üçgen (Δ) Bağlantı Matematiği:</h5>
+                        <ul>
+                            <li><strong>Yıldız (Y) Bağlantı:</strong> Faz bobinlerinin uçları ortak bir nötr noktasında birleştirilir. Hat gerilimi faz geriliminin √3 katıdır (U_hat = √3 × U_faz), hat akımı faz akımına eşittir (I_hat = I_faz). Dengeli yüklerde nötr iletkeninden akım akmaz (I_N = 0 A).</li>
+                            <li><strong>Üçgen (Δ) Bağlantı:</strong> Faz bobinleri seri bağlanarak kapalı bir döngü oluşturur; nötr hattı yoktur. Hat gerilimi faz gerilimine eşittir (U_hat = U_faz), hat akımı faz akımının √3 katıdır (I_hat = √3 × I_faz). Yüksek güç çeken motor ve trafolarda kullanılır.</li>
+                            <li><strong>Dönel Manyetik Alan:</strong> 3 fazlı sargılara uygulanan dengeli akımlar, statorda uzaysal olarak dönen sabit genlikli bir manyetik alan meydana getirir (n_s = 120 × f / 2p).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🔄 Güç Elektroniği: Doğrultucular, İnverterler ve Harmonikler</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> AC/DC dönüşüm süreçleri, frekans invertörleri (VFD) ve şebeke güç kalitesi etkileridir.</p>
+                    <div class="result-formula">THD-V ≤ %5 | THD-I ≤ %8 (IEEE 519 Standart Limitleri)</div>
+                    <div class="detail-content">
+                        <h5>Sürücü İç Yapısı ve Harmonik Filtreleme:</h5>
+                        <p>Frekans konvertörleri şebekeden çektiği 50 Hz AC gerilimi önce köprü diyotlarla DC'ye doğrultur, ardından IGBT transistörler üzerinden PWM (Darbe Genişlik Modülasyonu) ile istenen frekansta (0 - 400 Hz) motora aktarır.</p>
+                        <ul>
+                            <li><strong>Lineer Olmayan Yükler:</strong> Sürücüler, UPS'ler ve LED aydınlatmalar sinüs dalgasını kırparak 5., 7., 11. harmonik akımları üretir.</li>
+                            <li><strong>Nötr Hattı Aşırı Yüklenmesi:</strong> 3. ve tek katı harmonikler (triplen harmonikler) nötr iletkeninde toplanarak nötr kablosunun faz kablosundan daha fazla ısınmasına yol açar.</li>
+                            <li><strong>Çözüm Yöntemleri:</strong> Giriş hattı AC şok bobini (reaktör), harmonik filtreli kompanzasyon panoları veya Aktif Harmonik Filtre (AHF) üniteleri kullanılmalıdır.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. GÜÇ SİSTEMLERİ -->
+            <div id="info-power" class="page">
+                <div class="page-header">
+                    <h2>💡 Güç Sistemleri, Enerji ve Kompanzasyon</h2>
+                    <p class="subtitle">Aktif, reaktif, görünür güç bağıntıları, ceza sınırları ve kompanzasyon kademe hesabı.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🔥 Aktif Güç (P) ve İş Yapabilme Kapasitesi</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Elektrik enerjisinin faydalı mekanik işe, dönme hareketine, ışığa veya ısıya dönüşen reel bileşenidir.</p>
+                    <div class="result-formula">1 Faz: P = V × I × cosφ | 3 Faz: P = √3 × U × I × cosφ (Birim: Watt - W, kW)</div>
+                    <div class="detail-content">
+                        <h5>Projelendirme ve Fatura İlişkisi:</h5>
+                        <p>Elektrik sayaçlarında aktif tüketim kWh (kilowattsaat) olarak kayıt altına alınır. Saf omik yüklerde (rezistanslı fırınlar, akkor telli aydınlatma) gerilim ve akım dalgaları tam çakışıktır; faz açısı sıfır (φ = 0°), güç çarpanı ise birdir (cosφ = 1.0).</p>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>⚡ Reaktif Güç (Q), Endüktans ve Kapasite Etkisi</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Manyetik ve elektriksel alan oluşturan indüktör ve kapasitörlerin şebekeyle periyodik olarak değiş tokuş ettiği iş yapmayan güçtür.</p>
+                    <div class="result-formula">Q = √3 × U × I × sinφ (Birim: VAr / kVAr) | S² = P² + Q²</div>
+                    <div class="detail-content">
+                        <h5>Reaktif Gücün Şebekeye Etkileri:</h5>
+                        <ul>
+                            <li><strong>İndüktif Yükler:</strong> Asenkron motorlar, transformatörler, kaynak makineleri manyetik alan kurmak için şebekeden indüktif reaktif güç çeker (akım gerilimden geridedir).</li>
+                            <li><strong>Kapasitif Yükler:</strong> Güç kondansatörleri, UPS'ler ve uzun yer altı kabloları şebekeye kapasitif reaktif güç verir (akım gerilimden ileridedir).</li>
+                            <li><strong>Zararları:</strong> Reaktif güç iş yapmadığı halde iletken kesitlerini doldurur, trafoları gereksiz yükler, kablolarda gerilim düşümüne ve termal kayıplara sebep olur.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>⚖️ Güç Faktörü (cosφ) Düzeltmesi ve Kompanzasyon Mevzuatı</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> cosφ değerini 1.0'a yaklaştırarak şebekeden reaktif akım çekilmesini engelleme işlemidir.</p>
+                    <div class="result-formula">cosφ = P / S | Qc = P × [tan(arccos(cosφ1)) - tan(arccos(cosφ2))]</div>
+                    <div class="detail-content">
+                        <h5>EPDK Reaktif Enerji Ceza Oranları (Türkiye):</h5>
+                        <p>Bağlantı gücü 50 kVA üstü tesislerde çift yönlü elektronik sayaçlar ile reaktif oranlar denetlenir:</p>
+                        <ul>
+                            <li><strong>İndüktif Sınır (%20):</strong> Çekilen indüktif reaktif enerji aktif enerjinin <strong>%20</strong>'sini geçerse işletmeye reaktif indüktif ceza yansıtılır.</li>
+                            <li><strong>Kapasitif Sınır (%15):</strong> Şebekeye basılan kapasitif reaktif enerji aktif enerjinin <strong>%15</strong>'ini geçerse işletmeye reaktif kapasitif ceza kesilir.</li>
+                            <li><strong>Kompanzasyon Panosu Elemanları:</strong> Mikroişlemcili Reaktif Güç Kontrol Rölesi (RGKR), özel deşarj dirençli kontaktörler, ağır hizmet tipi güç kondansatörleri ve harmonik bozulma olan tesislerde kondansatörlerin patlamasını önleyen <strong>Harmonik Filtre Reaktörleri</strong> kullanılır.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MOTORLAR -->
+            <div id="info-motors" class="page">
+                <div class="page-header">
+                    <h2>⚙️ Elektrik Motorları, Sürücü Sistemleri ve Koruma</h2>
+                    <p class="subtitle">Asenkron motor mekanik-elektriksel bağıntıları, demeraj akımları ve pano yol verme metotları.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🔄 3 Fazlı Asenkron Motor Prensibi ve Etiket Okuma</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Stator sargılarına uygulanan 3 fazlı AC gerilimin rotorda gerilim indükleyerek moment üretmesidir.</p>
+                    <div class="result-formula">ns = (120 × f) / 2p | s = (ns - n) / ns | P_mil = √3 × U × I × cosφ × η</div>
+                    <div class="detail-content">
+                        <h5>Kutup Sayısı ve Senkron Devir Tablosu (50 Hz):</h5>
+                        <ul>
+                            <li><strong>2 Kutuplu (2p=2):</strong> Senkron devir ns = 3000 d/dk, rotor nominal hızı yaklaşık 2850 - 2950 d/dk.</li>
+                            <li><strong>4 Kutuplu (2p=4):</strong> Senkron devir ns = 1500 d/dk, rotor nominal hızı yaklaşık 1420 - 1470 d/dk (En sık kullanılan endüstriyel model).</li>
+                            <li><strong>6 Kutuplu (2p=6):</strong> Senkron devir ns = 1000 d/dk, rotor nominal hızı yaklaşık 930 - 970 d/dk.</li>
+                            <li><strong>Kayma (s):</strong> Asenkron motor senkron devirde dönemez; dönerse sargılar manyetik alanı kesemez ve tork sıfıra düşer. Bu hız farkına kayma denir (standart motorlarda %3 - %6 aralığındadır).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>📐 Motor Yol Verme Yöntemleri ve Pano Konfigürasyonları</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Motorların ilk kalkış anındaki yüksek demeraj akımını sınırlamak için uygulanan mühendislik yöntemleridir.</p>
+                    <div class="result-formula">I_kalkış = (4 - 8) × I_anma | Yıldız/Üçgende I_kalkış = I_dol / 3</div>
+                    <div class="detail-content">
+                        <h5>Yol Verme Yöntemlerinin Karşılaştırması:</h5>
+                        <ul>
+                            <li><strong>Direkt Yol Verme (DOL):</strong> 4 kW altı motorlarda uygulanır. Şebekeye direkt kontaktörle bağlanır; kalkış akımı anma akımının 5-7 katıdır. Ani mekanik şok oluşturur.</li>
+                            <li><strong>Yıldız-Üçgen Yol Verme (Y/D):</strong> 4 kW - 22 kW arası motorlarda 3 adet kontaktör ve yıldız-üçgen zaman rölesi ile yapılır. Kalkışta sargılar yıldız bağlanarak faz gerilimi 230V'a düşürülür; akım ve kalkış momenti 1/3 oranına iner. Motor devrini alınca (~%80) üçgen bağlantıya (400V) geçilir. Motor klemensinde 6 uç (U1-V1-W1 ve U2-V2-W2) panoya çekilmelidir.</li>
+                            <li><strong>Soft Starter (Yumuşak Yol Verici):</strong> Tristörler yardımıyla gerilimi sıfırdan nominal gerilime rampalı yükseltir. Mekanik dişli ve kayış vuruntusunu engeller, kalkış akımını 2.5 - 3.5 kat bandında sınırlar.</li>
+                            <li><strong>Frekans Konvertörü (VFD / İnverter):</strong> Motoru sıfır frekanstan nominal frekansa kadar sabit V/f oranıyla kaldırır; demeraj akımı nominal akımı asla aşmaz (I_kalkış ≤ 1.2 × I_n). Tam hız ve tork kontrolü sunar.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🛡️ Motor Koruma Sistemleri ve IEC 60947-4-1 Normları</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Motorları aşırı yüklenme, rotor sıkışması, düşük gerilim ve faz kaybına karşı koruyan cihazlardır.</p>
+                    <div class="result-formula">Termik Ayar: I_ayar = 1.0 × I_etiket (Y/D devresinde 0.58 × I_etiket)</div>
+                    <div class="detail-content">
+                        <h5>Kritik Koruma Ekipmanları:</h5>
+                        <ul>
+                            <li><strong>Motor Koruma Şalteri (PKZM / MPKB):</strong> Hem bimetal termik koruma hem de kısa devre anında açan manyetik korumayı tek gövdede barındırır. Kısa devre kesme kapasitesi yüksektir (50 kA - 100 kA).</li>
+                            <li><strong>Termik Röleler:</strong> Kontaktörün altına monte edilir; akımın motor etiket değerini uzun süre aşması durumunda ısınan bimetaller üzerinden kumanda devresini keserek kontaktörü bıraktırır.</li>
+                            <li><strong>Faz Koruma Rölesi:</strong> Şebekede fazlardan biri kesildiğinde 3 fazlı motor iki faza kalır ve aşırı akım çekerek dakikalar içinde yanar. Faz koruma rölesi faz eksikliğini, faz sırası hatasını veya %10'u aşan gerilim asimetrisini anında algılayarak motoru durdurur.</li>
+                            <li><strong>PTC Termistör Rölesi:</strong> Motor sargıları arasına yerleştirilen sıcaklığa duyarlı dirençleri izler; soğutma pervanesi kırıldığında veya ortam sıcaklığı aşıldığında sargı sıcaklığı kritik eşiğe (130°C - 155°C) ulaşınca sistemi açtırır.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. TRANSFORMATÖRLER -->
+            <div id="info-transformers" class="page">
+                <div class="page-header">
+                    <h2>🔌 Güç ve Dağıtım Transformatörleri</h2>
+                    <p class="subtitle">Dönüştürme prensipleri, %Uk kısa devre matematiği, trafo seçimleri ve emniyet hücreleri.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>⚡ Dağıtım Trafoları Çalışma İlkesi ve Anma Akımları</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Giriş frekansını değiştirmeden orta gerilimi (34.5 kV) alçak gerilime (0.4 kV) indiren statik elektrik makineleridir.</p>
+                    <div class="result-formula">a = V1 / V2 = I2 / I1 | Sekonder Akımı: In = S / (√3 × U_sekonder)</div>
+                    <div class="detail-content">
+                        <h5>Sık Kullanılan Trafo Anma Güçleri ve AG Akımları (400V):</h5>
+                        <ul>
+                            <li><strong>400 kVA:</strong> In = 577 A (Ana şalter seçimi: 630A TMŞ).</li>
+                            <li><strong>630 kVA:</strong> In = 909 A (Ana şalter seçimi: 1000A TMŞ / ACB).</li>
+                            <li><strong>1000 kVA:</strong> In = 1443 A (Ana şalter seçimi: 1600A ACB açık tip kompakt şalter).</li>
+                            <li><strong>1600 kVA:</strong> In = 2309 A (Ana şalter seçimi: 2500A ACB ve çoklu bakır bara).</li>
+                            <li><strong>2000 kVA:</strong> In = 2886 A (Ana şalter seçimi: 3200A ACB hava kesicili kompakt şalter).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>📊 %Uk Bağıl Kısa Devre Gerilimi ve Kesme Kapasitesi (Icu)</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Trafonun iç empedans yüzdesidir ve sekonder panodaki maksimum arıza akımını belirler.</p>
+                    <div class="result-formula">Ik = (In × 100) / %Uk | Pano Şalteri Seçimi: Icu ≥ Ik</div>
+                    <div class="detail-content">
+                        <h5>Pano Güvenliği Açısından Mühendislik Önemi:</h5>
+                        <p>Dağıtım trafolarında standart %Uk değeri <strong>%4 - %6</strong> mertebesindedir. Örneğin 1000 kVA (%Uk = %6) bir trafonun sekonder anma akımı 1443 A iken trafo klemenslerinde oluşacak doğrudan kısa devre akımı:</p>
+                        <p><span class="formula-tag">Ik = (1443 × 100) / 6 = 24.050 A = 24.05 kA</span></p>
+                        <p>Bu sebeple ana dağıtım panosundaki giriş şalterinin kısa devre kesme kapasitesi (Icu) kesinlikle en az <strong>36 kA veya 50 kA</strong> seçilmelidir; aksi halde arıza anında şalter arkı söndüremez ve pano infilak eder.</p>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🛢️ Kuru Tip ve Yağlı Tip Trafo Karşılaştırması ve Koruma</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> İzolasyon ve soğutma ortamına göre seçilen transformatör modelleri ve emniyet röleleridir.</p>
+                    <div class="result-formula">Buchholz Rölesi | Hermetik Basınç Ventili | PT100 Sargı Termostatı</div>
+                    <div class="detail-content">
+                        <h5>Trafo Tipleri ve Donanımları:</h5>
+                        <ul>
+                            <li><strong>Yağlı Dağıtım Trafoları:</strong> Mineral yağ hem dielektrik yalıtım hem de soğutma sağlar. Açık şalt sahalarında veya harici trafo binalarında kullanılır. Aşırı iç arkta gaz oluşumunu izleyen <strong>Buchholz Rölesi</strong> ve genleşme basıncını tahliye eden emniyet ventili ile korunur.</li>
+                            <li><strong>Kuru Tip (Cast Resin) Trafolar:</strong> Sargıları epoksi reçine ile kaplanmıştır. Yangın tehlikesi ve yağ sızıntısı riski bulunmadığından AVM, hastane, yüksek yapılar ve fabrika içi pano odalarında kullanımı zorunludur. Bakım gereksinimi düşüktür.</li>
+                            <li><strong>Sıcaklık Koruması:</strong> Kuru tip trafo sargılarına yerleştirilen PT100 probları üzerinden kontrol edilen mikroişlemcili röle, 100°C'de cebri soğutma fanlarını çalıştırır; sıcaklık 140°C'ye çıkarsa OG kesicisine açtırma trip sinyali gönderir.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. KORUMA ELEMANLARI -->
+            <div id="info-protection" class="page">
+                <div class="page-header">
+                    <h2>🛡️ Şalt ve Elektriksel Koruma Elemanları</h2>
+                    <p class="subtitle">Otomatik sigortalar, TMŞ, kaçak akım koruma röleleri ve parafudr seçim kriterleri.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🔘 Otomatik Sigortalar (MCB) ve Açma Eğrileri (B, C, D)</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Modüler DIN rayı tipi aşırı akım ve kısa devre koruma cihazlarıdır (TS EN 60898-1).</p>
+                    <div class="result-formula">B Tipi: (3 - 5) × In | C Tipi: (5 - 10) × In | D Tipi: (10 - 20) × In</div>
+                    <div class="detail-content">
+                        <h5>Açma Karakteristikleri ve Uygulama Alanları:</h5>
+                        <ul>
+                            <li><strong>B Tipi Sigortalar:</strong> Manyetik açma eşiği düşüktür. Ani kalkış akımı olmayan aydınlatma, rezistanslı ısıtıcılar ve elektronik devrelerde linyeyi korumak için kullanılır.</li>
+                            <li><strong>C Tipi Sigortalar:</strong> Standart konut priz hatları, buzdolabı, klima, küçük güçlü motorlar ve floresan aydınlatma gibi orta seviyede geçici akım darbesi çeken yüklerde kullanılır.</li>
+                            <li><strong>D Tipi Sigortalar:</strong> Transformatörler, puntalama ve kaynak makineleri, röntgen cihazları ve yüksek kalkış akımlı büyük asenkron motor hatlarında kalkış demeraj akımında devreyi zamansız açmamak için tercih edilir.</li>
+                            <li><strong>Kısa Devre Kesme Kapasitesi:</strong> Konut tipi sigortalar 4.5 kA veya 6 kA iken endüstriyel tali dağıtım panolarında en az <strong>10 kA</strong> kesme kapasiteli MCB kullanılmalıdır.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🏢 Kompakt Termik Manyetik Şalterler (TMŞ / MCCB)</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> 16A ile 1600A arasındaki anma akımlarını taşıyan ve ayarlanabilir koruma sunan döküm gövdeli şalterlerdir.</p>
+                    <div class="result-formula">Termik Ayar Sahası: Ir = (0.7 - 1.0) × In | Icu: 36 kA - 70 kA (IEC 60947-2)</div>
+                    <div class="detail-content">
+                        <h5>Gelişmiş Koruma ve Selektivite Özellikleri:</h5>
+                        <ul>
+                            <li><strong>Termik Koruma (Aşırı Yük):</strong> İletkenin uzun süreli aşırı akım altında ısınmasını takip eden bimetal mekanizmadır. Projedeki kablo akım taşıma sınırına göre şalter üzerinden akım ayar vidası ile hassas ayar yapılır.</li>
+                            <li><strong>Manyetik Koruma (Kısa Devre):</strong> Arıza anında elektromanyetik bobin üzerinden milisaniyeler mertebesinde devreyi açtırır.</li>
+                            <li><strong>Selektivite (Kademeli Açma):</strong> Tali panoda bir kısa devre olduğunda sadece arızalı linyenin şalteri açmalı, ana TMŞ açarak bütün fabrikanın elektriğini kesmemelidir. Bunun için zaman gecikmeli (Icw dayanımlı) elektronik üniteli şalterler entegre edilir.</li>
+                            <li><strong>Aksesuarlar:</strong> Uzaktan kumanda için motor mekanizması, yangın anında uzaktan açtırma için Şönt Açtırma Bobini ve şebeke voltajı çöktüğünde açması için Düşük Gerilim Bobini takılabilir.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>⚡ Kaçak Akım Koruma Röleleri (RCD / RCCB)</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Fazlardan devreye giren akım ile nötrden dönen akım arasındaki vektörel farkı (toprak kaçağını) denetler.</p>
+                    <div class="result-formula">ΔIn: 30 mA (Hayat Koruma) | 300 mA (Yangın Koruma)</div>
+                    <div class="detail-content">
+                        <h5>Sınıflar ve Kritik Tesisat Kuralları:</h5>
+                        <ul>
+                            <li><strong>30 mA Hayat Koruma:</strong> İnsanların doğrudan veya dolaylı temasına karşı can güvenliği sağlar. Banyo, mutfak, priz linyelerinde kullanımı yasal zorunluluktur.</li>
+                            <li><strong>300 mA Yangın Koruma:</strong> 300 mA seviyesindeki kaçak akım topraklama hattında veya izolasyon delinmesinde ark oluşturarak tutuşmaya yol açar; ana dağıtım panolarında yangın koruma amacıyla kullanılır.</li>
+                            <li><strong>AC Sınıfı vs. A Sınıfı:</strong> Standart AC sınıfı röleler sadece şebeke frekansındaki saf AC kaçakları algılar. Bilgisayar, sürücü, inverter bulunan modern tesislerde yarım dalga DC kaçakları görebilen <strong>A Tipi RCD</strong>, harmonikli ortamlarda ise yanlış açmaları önleyen <strong>B Tipi veya K Korumalı RCD</strong> kullanılmalıdır.</li>
+                            <li><strong>Nötr ve Toprak Ayrımı:</strong> Kaçak akım rölesinin arkasında nötr ile toprak asla birleştirilmemeli ve nötr hattı başka bir linyeyle ortak bağlanmamalıdır; aksi halde röle anında trip atar.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🌩️ Parafudr Sistemleri (Aşırı Gerilim Koruyucular - SPD)</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Yıldırım darbeleri ve şebeke manevralarıyla oluşan pik dalgaları saniyenin milyonda birinde toprağa deşarj eder.</p>
+                    <div class="result-formula">Tip 1 (B Sınıfı - 10/350 μs) | Tip 2 (C Sınıfı - 8/20 μs) | Tip 3 (D Sınıfı)</div>
+                    <div class="detail-content">
+                        <h5>Kademeli Parafudr Mimarisi:</h5>
+                        <ul>
+                            <li><strong>Tip 1 (B Sınıfı):</strong> Ana dağıtım panosuna konur. Doğrudan binaya veya yakın hatta düşen yıldırımın getirdiği 10/350 mikrosaniyelik yüksek enerjili darbeyi söndürür (Iimp: 25 - 50 kA).</li>
+                            <li><strong>Tip 2 (C Sınıfı):</strong> Tali kat ve saha panolarına yerleştirilir. Şebeke anahtarlamaları ve uzak yıldırım darbelerinin kalıntılarını sönümler (In: 20 - 40 kA, Up < 1.5 kV).</li>
+                            <li><strong>Tip 3 (D Sınıfı):</strong> PLC, otomasyon kartları, server ve hassas tıbbi cihazların priz girişlerine bağlanarak mikro düzeydeki pikleri temizler.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. PANO ELEMANLARI -->
+            <div id="info-panel" class="page">
+                <div class="page-header">
+                    <h2>🎛️ AG Dağıtım ve Otomasyon Pano Elemanları</h2>
+                    <p class="subtitle">Bara montajı, kontaktörler, klemensler, iklimlendirme ve TS EN 61439 pano standartları.</p>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🥖 Bakır Baralar, Akım Yoğunluğu ve Mesnetleme</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Yüksek akımları şalterler ve sigorta grupları arasında emniyetle dağıtan elektrolitik bakır iletkenlerdir.</p>
+                    <div class="result-formula">Çıplak Bakır Bara: ~1.5 A/mm² | Boyalı Bakır Bara: ~2.0 A/mm²</div>
+                    <div class="detail-content">
+                        <h5>Bara İşleme ve Pano Montaj Prensipleri:</h5>
+                        <ul>
+                            <li><strong>Boya Avantajı:</strong> Baraların siyah, kırmızı veya faz renkleriyle boyanması ısı ışımasını artırdığı için akım taşıma kapasitesini yaklaşık %15 - %20 yükseltir.</li>
+                            <li><strong>Mesnet İzolatör Aralıkları:</strong> Kısa devre anında iki bara arasında yüzlerce kilogramlık elektrostatik ve elektrodinamik çekme-itme kuvveti oluşur. Baraların bükülüp birbirine değmemesi için cam elyaf takviyeli DMC izolatörlerin mesafesi panonun kısa devre hesabına (Icw) göre sıkılaştırılmalıdır.</li>
+                            <li><strong>Tork Anahtarı ile Sıkım:</strong> Bara cıvataları (M8, M10, M12) kesinlikle tork anahtarı ile üretici katalog torkunda sıkılmalı ve tork markörü ile işaretlenmelidir; gevşek bağlantılar ark oluşturarak pano yangınlarının en yaygın sebebini teşkil eder.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>🧲 Kontaktörler ve Yük Kullanım Kategorileri</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Bobinine uygulanan kumanda sinyaliyle ana güç kontaklarını açıp kapatan elektromanyetik anahtarlardır.</p>
+                    <div class="result-formula">AC-1 (Omik Yükler) | AC-3 (Asenkron Motor Yol Verme) | AC-4 (Ters Akımla Frenleme)</div>
+                    <div class="detail-content">
+                        <h5>Kategoriye Göre Güç ve Ömür Kriteri:</h5>
+                        <p>Bir kontaktörün etiketinde yazan akım değeri kullanım kategorisine göre değişir:</p>
+                        <ul>
+                            <li><strong>AC-1 Sınıfı:</strong> Rezistanslı ısıtıcılar ve cosφ ≥ 0.95 olan aydınlatma yükleri içindir. Kontakları açma anında zorlanmaz.</li>
+                            <li><strong>AC-3 Sınıfı:</strong> Standart sincap kafesli asenkron motorların kontrolüdür. Kontaktör motorun kalkış demeraj akımını yapışmadan taşımalı ve tam devirde güvenle açabilmelidir. AC-1'de 40A taşıyan kontaktör, AC-3 sınıfında genellikle 25A seviyesine düşer.</li>
+                            <li><strong>Bobin Beslemeleri:</strong> Panolarda en sık 24V DC, 110V AC ve 230V AC bobinli modeller kullanılır. DC bobinli kontaktörlerde ters EMF gerilimini sönümlemek için paralel ters diyot veya varistör (RC bastırıcı) eklenmelidir.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="expandable-card" onclick="toggleCard(this)">
+                    <div class="card-header-flex">
+                        <h4>📦 TS EN 61439 Pano Standartları, IP Sınıfı ve Form Ayırma</h4>
+                        <span class="expand-badge">🔍 Detay İçin Tıkla</span>
+                    </div>
+                    <p><strong>Özet:</strong> Tip testli alçak gerilim panolarında mekanik dayanım, can emniyeti ve sıcaklık artış sınırlarıdır.</p>
+                    <div class="result-formula">Form 1'den Form 4b'ye Bölümlendirme | IP31, IP54, IP65 Muhafazalar</div>
+                    <div class="detail-content">
+                        <h5>Mühendislik Kriterleri:</h5>
+                        <ul>
+                            <li><strong>Form Ayırma:</strong> Pano içindeki baraların, fonksiyonel şalter ünitelerinin ve kablo terminallerinin metal veya yalıtkan perdelerle birbirinden ayrılmasıdır. <strong>Form 4b</strong> yapısında her şalter ve klemens grubu ayrı kapalı bir hücrededir; hücrelerin birinde ark patlaması olduğunda diğer devreler enerjili kalmaya devam eder.</li>
+                            <li><strong>IP Koruma Sınıfları:</strong> Pano odaları için IP31 / IP42 yeterliyken, tozlu fabrika ortamlarında ve çimento tesislerinde en az <strong>IP54</strong>, dış ortam saha panolarında ise contalı <strong>IP65 / IP66</strong> muhafazalar kullanılmalıdır.</li>
+                            <li><strong>Termal İklimlendirme:</strong> Pano içi sıcaklık 35°C eşiğini aştığında elektronik şalterlerin ömrü hızla tükenir. Termostat kontrollü emme-basma fan filtreleri, nem yoğunlaşmasını önleyen pano ısıtıcıları ve sürücülü panolarda <strong>Pano Kliması</strong> projelendirilmelidir.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= HESAPLAMA MERKEZİ SAYFALARI ================= -->
+
+            <!-- 1. Ohm Kanunu -->
+            <div id="calc-ohm" class="page">
+                <div class="page-header">
+                    <h2>⚡ Ohm Kanunu Hesaplayıcı</h2>
+                    <p class="subtitle">V = I × R | I = V / R | R = V / I</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Hesap Türü Seç</h3>
+                        <div class="calc-type-selector">
+                            <button class="type-btn active" onclick="setOhmType('voltage')">Gerilim (V)</button>
+                            <button class="type-btn" onclick="setOhmType('current')">Akım (I)</button>
+                            <button class="type-btn" onclick="setOhmType('resistance')">Direnç (R)</button>
+                        </div>
+                        <div class="input-group">
+                            <label id="ohm-lbl-1">Akım (A)</label>
+                            <input type="number" id="ohm-val-1" placeholder="Değer giriniz" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label id="ohm-lbl-2">Direnç (Ω)</label>
+                            <input type="number" id="ohm-val-2" placeholder="Değer giriniz" step="any">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcOhm()">Hesapla</button>
+                            <button class="btn btn-secondary" onclick="clearOhm()">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="ohmResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="ohmResultValue"></div>
+                        <div class="result-formula" id="ohmResultFormula"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DC Güç -->
+            <div id="calc-power-dc" class="page">
+                <div class="page-header">
+                    <h2>💡 DC Elektrik Gücü Hesaplayıcı</h2>
+                    <p class="subtitle">P = V × I | P = I² × R | P = V² / R</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Değerleri Girin</h3>
+                        <div class="input-group">
+                            <label>Gerilim (V)</label>
+                            <input type="number" id="dc-v" placeholder="Örn: 24" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Akım (A)</label>
+                            <input type="number" id="dc-i" placeholder="Örn: 5" step="any">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcDCPower()">Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('dc-v').value='';document.getElementById('dc-i').value='';document.getElementById('dcPowerResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="dcPowerResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="dcResultValue"></div>
+                        <div class="result-formula">P = V × I</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Tek Faz AC Güç -->
+            <div id="calc-power-ac-single" class="page">
+                <div class="page-header">
+                    <h2>〰️ Tek Faz AC Güç Hesaplayıcı</h2>
+                    <p class="subtitle">Aktif Güç: P = V × I × cosφ | Görünür Güç: S = V × I</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Parametreler</h3>
+                        <div class="input-group">
+                            <label>Faz-Nötr Gerilimi - V (Volt)</label>
+                            <input type="number" id="ac1-v" value="230" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Hat Akımı - I (Amper)</label>
+                            <input type="number" id="ac1-i" placeholder="Örn: 10" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Güç Faktörü (cosφ: 0 - 1 arası)</label>
+                            <input type="number" id="ac1-cos" value="0.85" step="0.01" max="1" min="0">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcAC1Power()">Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('ac1-i').value='';document.getElementById('ac1Result').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="ac1Result" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="ac1ResultVal"></div>
+                        <div class="result-formula" id="ac1ResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 3 Faz Güç -->
+            <div id="calc-power-ac-three" class="page">
+                <div class="page-header">
+                    <h2>⚡⚡⚡ 3 Faz Güç Hesaplayıcı</h2>
+                    <p class="subtitle">Aktif Güç: P = √3 × U × I × cosφ</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Parametreler</h3>
+                        <div class="input-group">
+                            <label>Fazlar Arası Hat Gerilimi - U (Volt)</label>
+                            <input type="number" id="ac3-v" value="400" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Hat Akımı - I (Amper)</label>
+                            <input type="number" id="ac3-i" placeholder="Örn: 25" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Güç Faktörü (cosφ)</label>
+                            <input type="number" id="ac3-cos" value="0.85" step="0.01" max="1" min="0">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcAC3Power()">Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('ac3-i').value='';document.getElementById('ac3Result').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="ac3Result" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="ac3ResultVal"></div>
+                        <div class="result-formula" id="ac3ResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Akım Hesaplama -->
+            <div id="calc-current" class="page">
+                <div class="page-header">
+                    <h2>→→ Akım Hesaplama (Güçten Akıma)</h2>
+                    <p class="subtitle">1 Faz: I = P / (V × cosφ) | 3 Faz: I = P / (√3 × U × cosφ)</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Sistem Türü ve Güç</h3>
+                        <div class="input-group">
+                            <label>Sistem Türü</label>
+                            <select id="curr-phase">
+                                <option value="1">Tek Faz (230V)</option>
+                                <option value="3" selected>3 Faz (400V)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Aktif Güç - P (Kilowatt - kW)</label>
+                            <input type="number" id="curr-p" placeholder="Örn: 15" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Güç Faktörü (cosφ)</label>
+                            <input type="number" id="curr-cos" value="0.85" step="0.01">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcCurrentFromPower()">Akımı Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('curr-p').value='';document.getElementById('currResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="currResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="currResultVal"></div>
+                        <div class="result-formula" id="currResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Gerilim Düşümü -->
+            <div id="calc-voltage" class="page">
+                <div class="page-header">
+                    <h2>⇅ Hat Gerilim Düşümü Hesabı</h2>
+                    <p class="subtitle">Bakır İletken: %e = (100 × L × P) / (k × S × V²)</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Hat Parametreleri</h3>
+                        <div class="input-group">
+                            <label>Şebeke Gerilimi</label>
+                            <select id="drop-v">
+                                <option value="230">Tek Faz (230V)</option>
+                                <option value="400" selected>3 Faz (400V)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Taşınan Güç - P (kW)</label>
+                            <input type="number" id="drop-p" placeholder="Örn: 22" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Hat Mesafesi - L (Metre)</label>
+                            <input type="number" id="drop-l" placeholder="Örn: 60" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Kablo Kesiti - S (mm²)</label>
+                            <input type="number" id="drop-s" placeholder="Örn: 6" step="any">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcVoltageDrop()">Düşümü Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('dropResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="dropResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="dropResultVal"></div>
+                        <div class="result-formula" id="dropResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Direnç Hesaplama -->
+            <div id="calc-resistance" class="page">
+                <div class="page-header">
+                    <h2>Ω Eşdeğer Direnç Hesaplayıcı</h2>
+                    <p class="subtitle">Seri ve Paralel İki Direncin Eşdeğerini Bulma</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Direnç Değerleri</h3>
+                        <div class="input-group">
+                            <label>1. Direnç R1 (Ω)</label>
+                            <input type="number" id="res-r1" placeholder="Örn: 100" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>2. Direnç R2 (Ω)</label>
+                            <input type="number" id="res-r2" placeholder="Örn: 100" step="any">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcEquivResistance()">Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('res-r1').value='';document.getElementById('res-r2').value='';document.getElementById('resResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="resResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="resResultVal"></div>
+                        <div class="result-formula" id="resResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Enerji Hesaplama -->
+            <div id="calc-energy" class="page">
+                <div class="page-header">
+                    <h2>⚙️ Elektrik Enerjisi ve Tüketim Hesabı</h2>
+                    <p class="subtitle">E = P × t (kWh cinsinden tüketim)</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Tüketim Girdileri</h3>
+                        <div class="input-group">
+                            <label>Cihaz / Sistem Gücü (Watt)</label>
+                            <input type="number" id="nrg-p" placeholder="Örn: 2000" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Günlük Çalışma Süresi (Saat)</label>
+                            <input type="number" id="nrg-h" placeholder="Örn: 8" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Çalışma Gün Sayısı</label>
+                            <input type="number" id="nrg-d" value="30" step="any">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcEnergyConsumption()">Enerji Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('nrgResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="nrgResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="nrgResultVal"></div>
+                        <div class="result-formula" id="nrgResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. Güç Faktörü ve Kompanzasyon -->
+            <div id="calc-power-factor" class="page">
+                <div class="page-header">
+                    <h2>⚡ Kompanzasyon Kondansatör Gücü Hesabı</h2>
+                    <p class="subtitle">Gerekli Kondansatör: Qc = P × (tanφ1 - tanφ2)</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Tesis Yük Parametreleri</h3>
+                        <div class="input-group">
+                            <label>Tesis Aktif Gücü - P (kW)</label>
+                            <input type="number" id="qc-p" placeholder="Örn: 100" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Mevcut Güç Faktörü (cosφ1)</label>
+                            <input type="number" id="qc-cos1" value="0.75" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Hedeflenen Güç Faktörü (cosφ2)</label>
+                            <input type="number" id="qc-cos2" value="0.98" step="0.01">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcCompensation()">Kondansatör Gücünü Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('qcResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="qcResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="qcResultVal"></div>
+                        <div class="result-formula" id="qcResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Transformatör Hesaplayıcı -->
+            <div id="calc-transformer" class="page">
+                <div class="page-header">
+                    <h2>🔌 Trafo Anma Akımı ve Kısa Devre Hesabı</h2>
+                    <p class="subtitle">In = S / (√3 × U) | Ik = (In × 100) / %Uk</p>
+                </div>
+                <div class="calculator-container">
+                    <div class="calculator-card">
+                        <h3>Trafo Etiket Değerleri</h3>
+                        <div class="input-group">
+                            <label>Trafo Gücü - S (kVA)</label>
+                            <input type="number" id="tr-s" placeholder="Örn: 1000" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Sekonder Gerilimi - U (Volt)</label>
+                            <input type="number" id="tr-u" value="400" step="any">
+                        </div>
+                        <div class="input-group">
+                            <label>Kısa Devre Gerilimi (%Uk)</label>
+                            <input type="number" id="tr-uk" value="6" step="0.1">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="calcTransformer()">Trafoyu Hesapla</button>
+                            <button class="btn btn-secondary" onclick="document.getElementById('trResult').style.display='none';">Temizle</button>
+                        </div>
+                    </div>
+                    <div class="result-card" id="trResult" style="display: none;">
+                        <h3>📊 HESAPLAMA SONUCU</h3>
+                        <div class="result-value" id="trResultVal"></div>
+                        <div class="result-formula" id="trResultForm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hakkında Sayfası -->
+            <div id="about" class="page">
+                <div class="page-header">
+                    <h2>ℹ️ Proje Hakkında</h2>
+                    <p class="subtitle">Mühendislik Kapsamı, Standart Uyumluluğu ve Sistem Mimarisi</p>
+                </div>
+                <div class="about-card">
+                    <h3>⚡ Elektrik Bilgi Bankası ve Hesaplama Portalı</h3>
+                    <p>Bu uygulama; elektrik-elektronik mühendisliği saha, atölye ve pano tasarım süreçlerinde sıkça başvurulan teorik bağıntıları, şalt cihazı standartlarını ve elektriksel hesaplamaları tek bir modüler platformda toplamak amacıyla geliştirilmiştir.</p>
+                    <p><strong>Standart Uyumluluğu:</strong> TS HD 60364 (Alçak Gerilim Tesisatları), TS EN 61439 (AG Dağıtım Panoları), TS EN 60947 (Alçak Gerilim Şalt Cihazları) ve uluslararası IEC normları referans alınmıştır.</p>
+                    <p><strong>Geliştirme Mimarisi:</strong> Dinamik istemci taraflı hesaplama algoritmaları, tıkla-genişlet modüler kart mimarisi ve endüstriyel koyu tema odaklı arayüz bileşenleri ile tasarlanmıştır.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Elektrik Bilgi Bankası – Eğitim Amaçlı Mühendislik Yardımcı Uygulaması</p>
+    </footer>
+
+    <!-- Script Motoru -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const menuBtn = document.getElementById('menuToggleBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        }
+
+        if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('data-page') === pageId);
+            });
+
+            closeSidebar();
+            const mainArea = document.querySelector('.main-content');
+            if (mainArea) mainArea.scrollTop = 0;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleCard(cardElement) {
+            cardElement.classList.toggle('open');
+            const badge = cardElement.querySelector('.expand-badge');
+            if (badge) {
+                badge.textContent = cardElement.classList.contains('open') ? '▲ Kapat' : '🔍 Detay İçin Tıkla';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-page]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateTo(el.getAttribute('data-page'));
+                });
+            });
+
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
+                    themeBtn.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+                });
+            }
+        });
+
+        // 1. Ohm Kanunu
+        let currentOhmType = 'voltage';
+        function setOhmType(type) {
+            currentOhmType = type;
+            const buttons = document.querySelectorAll('#calc-ohm .type-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const lbl1 = document.getElementById('ohm-lbl-1');
+            const lbl2 = document.getElementById('ohm-lbl-2');
+            if (type === 'voltage') {
+                lbl1.textContent = 'Akım (A)';
+                lbl2.textContent = 'Direnç (Ω)';
+            } else if (type === 'current') {
+                lbl1.textContent = 'Gerilim (V)';
+                lbl2.textContent = 'Direnç (Ω)';
+            } else {
+                lbl1.textContent = 'Gerilim (V)';
+                lbl2.textContent = 'Akım (A)';
+            }
+        }
+
+        function calcOhm() {
+            const v1 = parseFloat(document.getElementById('ohm-val-1').value);
+            const v2 = parseFloat(document.getElementById('ohm-val-2').value);
+            const resCard = document.getElementById('ohmResult');
+            const resVal = document.getElementById('ohmResultValue');
+            const resForm = document.getElementById('ohmResultFormula');
+
+            if (isNaN(v1) || isNaN(v2) || v2 === 0) {
+                alert('Lütfen geçerli değerler giriniz!');
+                return;
+            }
+
+            resCard.style.display = 'block';
+            if (currentOhmType === 'voltage') {
+                const res = v1 * v2;
+                resVal.textContent = res.toFixed(2) + ' V';
+                resForm.textContent = `V = I × R = ${v1} A × ${v2} Ω`;
+            } else if (currentOhmType === 'current') {
+                const res = v1 / v2;
+                resVal.textContent = res.toFixed(2) + ' A';
+                resForm.textContent = `I = V / R = ${v1} V / ${v2} Ω`;
+            } else {
+                const res = v1 / v2;
+                resVal.textContent = res.toFixed(2) + ' Ω';
+                resForm.textContent = `R = V / I = ${v1} V / ${v2} A`;
+            }
+        }
+
+        function clearOhm() {
+            document.getElementById('ohm-val-1').value = '';
+            document.getElementById('ohm-val-2').value = '';
+            document.getElementById('ohmResult').style.display = 'none';
+        }
+
+        // 2. DC Güç
+        function calcDCPower() {
+            const v = parseFloat(document.getElementById('dc-v').value);
+            const i = parseFloat(document.getElementById('dc-i').value);
+            if (isNaN(v) || isNaN(i)) { alert('Lütfen gerilim ve akım giriniz!'); return; }
+            const p = v * i;
+            document.getElementById('dcPowerResult').style.display = 'block';
+            document.getElementById('dcResultValue').textContent = p >= 1000 ? (p/1000).toFixed(2) + ' kW' : p.toFixed(2) + ' W';
+        }
+
+        // 3. Tek Faz AC Güç
+        function calcAC1Power() {
+            const v = parseFloat(document.getElementById('ac1-v').value);
+            const i = parseFloat(document.getElementById('ac1-i').value);
+            const cos = parseFloat(document.getElementById('ac1-cos').value);
+            if (isNaN(v) || isNaN(i) || isNaN(cos)) { alert('Eksik alanları doldurunuz!'); return; }
+            const p = v * i * cos;
+            const s = v * i;
+            document.getElementById('ac1Result').style.display = 'block';
+            document.getElementById('ac1ResultVal').textContent = (p / 1000).toFixed(2) + ' kW';
+            document.getElementById('ac1ResultForm').textContent = `Aktif Güç (P): ${(p/1000).toFixed(2)} kW | Görünür Güç (S): ${(s/1000).toFixed(2)} kVA`;
+        }
+
+        // 4. 3 Faz AC Güç
+        function calcAC3Power() {
+            const v = parseFloat(document.getElementById('ac3-v').value);
+            const i = parseFloat(document.getElementById('ac3-i').value);
+            const cos = parseFloat(document.getElementById('ac3-cos').value);
+            if (isNaN(v) || isNaN(i) || isNaN(cos)) { alert('Eksik alanları doldurunuz!'); return; }
+            const p = Math.sqrt(3) * v * i * cos;
+            const s = Math.sqrt(3) * v * i;
+            document.getElementById('ac3Result').style.display = 'block';
+            document.getElementById('ac3ResultVal').textContent = (p / 1000).toFixed(2) + ' kW';
+            document.getElementById('ac3ResultForm').textContent = `Aktif (P): ${(p/1000).toFixed(2)} kW | Görünür (S): ${(s/1000).toFixed(2)} kVA`;
+        }
+
+        // 5. Akım Hesaplama
+        function calcCurrentFromPower() {
+            const phase = parseInt(document.getElementById('curr-phase').value);
+            const pKW = parseFloat(document.getElementById('curr-p').value);
+            const cos = parseFloat(document.getElementById('curr-cos').value);
+            if (isNaN(pKW) || isNaN(cos) || cos === 0) { alert('Lütfen geçerli değer giriniz!'); return; }
+            const p = pKW * 1000;
+            let current = 0;
+            if (phase === 1) {
+                current = p / (230 * cos);
+            } else {
+                current = p / (Math.sqrt(3) * 400 * cos);
+            }
+            document.getElementById('currResult').style.display = 'block';
+            document.getElementById('currResultVal').textContent = current.toFixed(2) + ' A';
+            document.getElementById('currResultForm').textContent = phase === 1 ? `I = P / (230 × ${cos})` : `I = P / (√3 × 400 × ${cos})`;
+        }
+
+        // 6. Gerilim Düşümü
+        function calcVoltageDrop() {
+            const v = parseFloat(document.getElementById('drop-v').value);
+            const p = parseFloat(document.getElementById('drop-p').value);
+            const l = parseFloat(document.getElementById('drop-l').value);
+            const s = parseFloat(document.getElementById('drop-s').value);
+            if (isNaN(p) || isNaN(l) || isNaN(s) || s === 0) { alert('Tüm alanları doldurunuz!'); return; }
+            const k = 56;
+            let dropPercent = 0;
+            if (v === 230) {
+                dropPercent = (200 * l * (p * 1000)) / (k * s * Math.pow(v, 2));
+            } else {
+                dropPercent = (100 * l * (p * 1000)) / (k * s * Math.pow(v, 2));
+            }
+            document.getElementById('dropResult').style.display = 'block';
+            document.getElementById('dropResultVal').textContent = '%' + dropPercent.toFixed(2);
+            document.getElementById('dropResultForm').textContent = dropPercent > 3 ? '⚠️ DİKKAT: %3 aydınlatma sınırını aşıyor! Kesiti büyütün.' : '✅ UYGUN: Standart tasarım limitleri dahilindedir.';
+        }
+
+        // 7. Eşdeğer Direnç
+        function calcEquivResistance() {
+            const r1 = parseFloat(document.getElementById('res-r1').value);
+            const r2 = parseFloat(document.getElementById('res-r2').value);
+            if (isNaN(r1) || isNaN(r2)) { alert('Direnç değerlerini giriniz!'); return; }
+            const rSeri = r1 + r2;
+            const rParalel = (r1 * r2) / (r1 + r2);
+            document.getElementById('resResult').style.display = 'block';
+            document.getElementById('resResultVal').textContent = `Seri: ${rSeri.toFixed(2)} Ω`;
+            document.getElementById('resResultForm').textContent = `Paralel Eşdeğer: ${rParalel.toFixed(2)} Ω`;
+        }
+
+        // 8. Enerji Tüketimi
+        function calcEnergyConsumption() {
+            const p = parseFloat(document.getElementById('nrg-p').value);
+            const h = parseFloat(document.getElementById('nrg-h').value);
+            const d = parseFloat(document.getElementById('nrg-d').value);
+            if (isNaN(p) || isNaN(h) || isNaN(d)) { alert('Girdileri kontrol ediniz!'); return; }
+            const totalKWh = ((p * h * d) / 1000);
+            document.getElementById('nrgResult').style.display = 'block';
+            document.getElementById('nrgResultVal').textContent = totalKWh.toFixed(2) + ' kWh';
+            document.getElementById('nrgResultForm').textContent = `Günlük: ${((p*h)/1000).toFixed(2)} kWh | Toplam: ${d} Günlük Tüketim`;
+        }
+
+        // 9. Kompanzasyon Hesabı
+        function calcCompensation() {
+            const p = parseFloat(document.getElementById('qc-p').value);
+            const cos1 = parseFloat(document.getElementById('qc-cos1').value);
+            const cos2 = parseFloat(document.getElementById('qc-cos2').value);
+            if (isNaN(p) || isNaN(cos1) || isNaN(cos2)) { alert('Eksik alanları giriniz!'); return; }
+            const phi1 = Math.acos(cos1);
+            const phi2 = Math.acos(cos2);
+            const tan1 = Math.tan(phi1);
+            const tan2 = Math.tan(phi2);
+            const qc = p * (tan1 - tan2);
+            document.getElementById('qcResult').style.display = 'block';
+            document.getElementById('qcResultVal').textContent = qc.toFixed(2) + ' kVAr';
+            document.getElementById('qcResultForm').textContent = `Qc = ${p} kW × (${tan1.toFixed(3)} - ${tan2.toFixed(3)})`;
+        }
+
+        // 10. Transformatör Hesabı
+        function calcTransformer() {
+            const s = parseFloat(document.getElementById('tr-s').value);
+            const u = parseFloat(document.getElementById('tr-u').value);
+            const uk = parseFloat(document.getElementById('tr-uk').value);
+            if (isNaN(s) || isNaN(u) || isNaN(uk) || uk === 0) { alert('Trafo parametrelerini giriniz!'); return; }
+            const inSec = (s * 1000) / (Math.sqrt(3) * u);
+            const ik = (inSec * 100) / uk;
+            document.getElementById('trResult').style.display = 'block';
+            document.getElementById('trResultVal').textContent = `In: ${inSec.toFixed(1)} A`;
+            document.getElementById('trResultForm').textContent = `Sekonder Kısa Devre Akımı (Ik): ${(ik / 1000).toFixed(2)} kA (Şalter kesme kapasitesi için)`;
+        }
+    </script>
+</body>
+</html>
